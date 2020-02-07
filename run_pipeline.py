@@ -1,7 +1,5 @@
 from simple_autoencoder import run_simple_autoencoder
 from cnn_autoencoder import run_cnn_autoencoder
-from va_autoencoder import run_va_autoencoder
-
 
 def is_everything_set():
     '''
@@ -13,7 +11,6 @@ def is_everything_set():
 def run_all_models():
     run_simple_autoencoder()
     run_cnn_autoencoder()
-    run_va_autoencoder()
 
 # TODO Call preprocessing
 def run_all_preprocessing():

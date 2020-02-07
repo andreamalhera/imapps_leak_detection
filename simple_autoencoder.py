@@ -1,11 +1,12 @@
 from keras.layers import Input, Dense
 from keras.models import Model
 from keras import metrics
+import datetime
 import numpy as np
 import params
 import tensorflow as tf
 #TODO: import PCA and try out
-from utilities.autoencoder_utilities import get_stored_model, load_preprocessed_snippets, init_setup
+from utilities.autoencoder_utilities import get_stored_model, load_preprocessed_snippets, init_setup, get_autoencoder_weights_filepath
 
 # TODO: This import should not be necessary as plotting is part of testing
 from utilities import test_utilities
@@ -19,6 +20,13 @@ EPOCHS = 10
 BATCH_SIZE = 64
 LOSS_SIMPLE_AUTOENCODER = "mean_squared_error"   #binary_crossentropy, mean_squared_error
 PLOT_ACTIVATION=False
+WEIGHTS_PATH=params.WEIGHTS_PATH
+
+now = datetime.datetime.now()
+timestamp = now.strftime("_%Y%m%d_%H%M%S")
+AUTOENCODER_WEIGHTS_PATH=get_autoencoder_weights_filepath(AUTOENCODER_NAME, "autoencoder", EPOCHS, BATCH_SIZE, ENCODING_DIM, timestamp)
+ENCODER_WEIGHTS_PATH=get_autoencoder_weights_filepath(AUTOENCODER_NAME, "ncoder", EPOCHS, BATCH_SIZE, ENCODING_DIM, timestamp)
+
 
 def train_simple_autoencoder(x_train, x_test, encoding_dim=ENCODING_DIM):
     # reshape data from (number of samples, 64, 87) to (number of samples, 5568)
@@ -76,12 +84,6 @@ def train_simple_autoencoder(x_train, x_test, encoding_dim=ENCODING_DIM):
         losses.append(loss)
     #plot_losses(losses)
 
-    # save encoder, decoder
-
-    autoencoder.summary()
-    autoencoder.save(params.AUTOENCODER_WEIGHTS_PATH, autoencoder.sample_weights)
-    autoencoder.save(params.ENCODER_WEIGHTS_PATH, encoder)
-
     return encoder, autoencoder
 
 def predict_simple_autoencoder(encoder, autoencoder, x_test):
@@ -101,8 +103,12 @@ def run_simple_autoencoder():
         encoder, autoencoder = train_simple_autoencoder(x_train, x_test)
     encoded_imgs, decoded_imgs =predict_simple_autoencoder(encoder, autoencoder, x_test)
 
-    return encoder, autoencoder
+    autoencoder.summary()
+    # Store models
+    autoencoder.save(AUTOENCODER_WEIGHTS_PATH, autoencoder.sample_weights)
+    autoencoder.save(ENCODER_WEIGHTS_PATH, encoder)
 
+    return encoder, autoencoder
 
 if __name__ == '__main__':
     init_setup()

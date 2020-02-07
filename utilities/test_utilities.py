@@ -83,7 +83,7 @@ def plot_encoded_decoded_simplest(x_test, decoded_imgs, plt_name):
         ax.get_yaxis().set_visible(False)
 
     plt.savefig(plt_name)
-    plt.show()
+    #plt.show()
 
 
 #!!! features are not interpretable, plots different every time
@@ -107,7 +107,7 @@ def tsne_presentation_of_vectors(no_leak_vectors, leak_vectors):
 
     plt.legend()
     plt.savefig(TNSE_PATH)
-    plt.show()
+    #plt.show()
 
 
 # use only for simplest autoencoder with encoding dimensionality of 30 or 300

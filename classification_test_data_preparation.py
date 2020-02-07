@@ -11,10 +11,15 @@ and saved in .npy-files. The file names are saved in lists, one for data with le
 These lists can later be used to confirm classifications and as "blacklists" to exclude files never to be used for training.
 """
 
-challenge = False #set true if unlabelled data from challenge_data folder should be used
-folder = "data/classification_test_data"
-model_data_folder = "data/model_data"
-test_percentage = 0.2
+CHALLENGE = False #set true if unlabelled data from challenge_data folder should be used
+CLASSIFICATION_DATA_PATH = "data/classification_test_data"
+MODEL_DATA_FOLDER = "data/model_data"
+TEST_PERCENTAGE = 0.2
+SAMPLERATE= params.SAMPLERATE
+NUMBER_OF_MEL_BANDS=params.NUMBER_OF_MEL_BANDS
+MAX_FREQ_MEL_BAND=params.MAX_FREQ_MEL_BAND
+SNIPPET_LENGTH=params.SNIPPET_LENGTH
+
 # blacklist for files never to be used for training
 no_leak_list = []
 leak_list = []
@@ -22,23 +27,23 @@ unknown = []
 
 
 def create_directory():
-    if not os.path.exists(folder):
-        os.mkdir(folder)
-    if not os.path.exists(folder + "/output-challenge-npy-files"):
-        os.mkdir(folder + "/output-challenge-npy-files")
-    if not os.path.exists(folder + "/output-labelled-npy-files"):
-        os.mkdir(folder + "/output-labelled-npy-files")
-    if not os.path.exists(folder + "/challenge_data"):
-        os.mkdir(folder + "/challenge_data")
-    if not os.path.exists(folder + "/leak_eval_data"):
-        os.mkdir(folder + "/leak_eval_data")
-    if not os.path.exists(folder + "/no_leak_eval_data"):
-        os.mkdir(folder + "/no_leak_eval_data")
+    if not os.path.exists(CLASSIFICATION_DATA_PATH):
+        os.mkdir(CLASSIFICATION_DATA_PATH)
+    if not os.path.exists(CLASSIFICATION_DATA_PATH + "/output-challenge-npy-files"):
+        os.mkdir(CLASSIFICATION_DATA_PATH + "/output-challenge-npy-files")
+    if not os.path.exists(CLASSIFICATION_DATA_PATH + "/output-labelled-npy-files"):
+        os.mkdir(CLASSIFICATION_DATA_PATH + "/output-labelled-npy-files")
+    if not os.path.exists(CLASSIFICATION_DATA_PATH + "/challenge_data"):
+        os.mkdir(CLASSIFICATION_DATA_PATH + "/challenge_data")
+    if not os.path.exists(CLASSIFICATION_DATA_PATH + "/leak_eval_data"):
+        os.mkdir(CLASSIFICATION_DATA_PATH + "/leak_eval_data")
+    if not os.path.exists(CLASSIFICATION_DATA_PATH + "/no_leak_eval_data"):
+        os.mkdir(CLASSIFICATION_DATA_PATH + "/no_leak_eval_data")
 
 
 def load_test_data():
     # load data from .npy-file
-    data = np.load(model_data_folder + "test_data.npy")
+    data = np.load(MODEL_DATA_FOLDER + "test_data.npy")
     return data
 
 
@@ -82,10 +87,10 @@ def load_snippets_as_mel_matrices(path_to_files, length_snippet, blacklist):
         for _ in range(number_of_snippets):
             snippet = signal[length_snippets_array*i:length_snippets_array*(i+1)]
             i += 1
-            mel_matrix = librosa.feature.melspectrogram(y=snippet, sr=params.SAMPLERATE,
-                    n_mels=params.NUMBER_OF_MEL_BANDS, fmax=params.MAX_FREQ_MEL_BAND)
+            mel_matrix = librosa.feature.melspectrogram(y=snippet, sr=SAMPLERATE,
+                    n_mels=NUMBER_OF_MEL_BANDS, fmax=MAX_FREQ_MEL_BAND)
             snippet_list_mel_matrices.append(mel_matrix)
-        if challenge:
+        if CHALLENGE:
             save_as_npy(snippet_list_mel_matrices,
                         "data/classification_test_data/output-challenge-npy-files/" + file.name[:-4])
         else:
@@ -96,20 +101,20 @@ def load_snippets_as_mel_matrices(path_to_files, length_snippet, blacklist):
 if __name__ == '__main__':
     create_directory()
 
-    if challenge:
+    if CHALLENGE:
         # for challenge:
-        load_snippets_as_mel_matrices(folder + "/challenge_data", params.SNIPPET_LENGTH, unknown)
+        load_snippets_as_mel_matrices(CLASSIFICATION_DATA_PATH + "/challenge_data", SNIPPET_LENGTH, unknown)
 
-    if not challenge:
-        load_snippets_as_mel_matrices(folder + "/no_leak_eval_data", params.SNIPPET_LENGTH, no_leak_list)
-        load_snippets_as_mel_matrices(folder + "/leak_eval_data", params.SNIPPET_LENGTH, leak_list)
+    if not CHALLENGE:
+        load_snippets_as_mel_matrices(CLASSIFICATION_DATA_PATH + "/no_leak_eval_data", SNIPPET_LENGTH, no_leak_list)
+        load_snippets_as_mel_matrices(CLASSIFICATION_DATA_PATH + "/leak_eval_data", SNIPPET_LENGTH, leak_list)
         print("Files in no_leak_list: ", no_leak_list)
         print("Files in leak_list: ", leak_list)
 
-        with open(folder + '/output-labelled-npy-files/no_leak_list.txt', 'w') as f:
+        with open(CLASSIFICATION_DATA_PATH + '/output-labelled-npy-files/no_leak_list.txt', 'w') as f:
             for item in no_leak_list:
                 f.write("%s\n" % item)
 
-        with open(folder + '/output-labelled-npy-files/leak_list.txt', "w") as f:
+        with open(CLASSIFICATION_DATA_PATH + '/output-labelled-npy-files/leak_list.txt', "w") as f:
             for item in leak_list:
                 f.write("%s\n" % item)

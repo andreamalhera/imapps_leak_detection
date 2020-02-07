@@ -132,6 +132,10 @@ def run_cnn_autoencoder():
         # train encoder and decoder
         encoder, decoder, autoencoder = train_cnn_autoencoder(x_train, x_test, encoding_dim, num_convs)
 
+    # TODO: the rest of this class is testing
+    encoded_imgs, decoded_imgs = predict_cnn_autoencoder(encoder, decoder, x_test)
+    return encoder, decoder, autoencoder
+
 
 if __name__ == '__main__':
     init_setup()

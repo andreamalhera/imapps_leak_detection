@@ -4,16 +4,14 @@ import preprocessing_leak_test_data
 from cnn_autoencoder import run_cnn_autoencoder, predict_cnn_autoencoder
 from utilities import test_utilities
 from simple_autoencoder import run_simple_autoencoder, predict_simple_autoencoder
-from utilities.autoencoder_utilities import load_preprocessed_snippets, get_autoencoder_weights_filepath
-from keras.models import Model, load_model
+from utilities.autoencoder_utilities import load_preprocessed_snippets
 
 from utilities.test_utilities import plot_2D_vectors, plot_encoded_decoded, \
     plot_encoded_decoded_simplest, plot_encoded_vectors, tsne_presentation_of_vectors
 
-import pdb
 # TODO: Import all tests from all autoencoders
 
-PLOT_ACTIVATION = True
+PLOT_ACTIVATION = False
 PERCENTAGE_DATA_USED = 0.5
 
 LOAD_LEAK_SNIPPEDS_FROM_OUTPUT=params.LOAD_LEAK_SNIPPEDS_FROM_OUTPUT
@@ -23,8 +21,6 @@ PLOT_LEAK_NAME=params.PLOT_LEAK_NAME
 PLOT_NO_LEAK_PATH=params.PLOT_NO_LEAK_PATH
 PLOT_NO_LEAK_NAME=params.PLOT_NO_LEAK_NAME
 CNN_OUTPUT_PATH=params.CNN_OUTPUT_PATH
-WEIGHTS_PATH=params.WEIGHTS_PATH
-
 
 def test_with_leak_data(encoder, autoencoder):
     if LOAD_LEAK_SNIPPEDS_FROM_OUTPUT:
@@ -84,44 +80,30 @@ def run_simple_plots(x_true, x_encoded, x_pred):
 
 
 def run_test_simple(x_test):
-    ENCODER_WEIGHTS_PATH = WEIGHTS_PATH + "SIMPLE_weights_encoder_e250_dim300_ba64_2019-08-01-05:34:06.h5"
-    AUTOENCODER_WEIGHTS_PATH = WEIGHTS_PATH + "SIMPLE_weights_e250_dim300_ba64_2019-08-01-05:34:06.h5"
-    encoder= load_model(ENCODER_WEIGHTS_PATH)
-    autoencoder=load_model(AUTOENCODER_WEIGHTS_PATH)
-
     x_test = x_test.reshape((len(x_test), np.prod(x_test.shape[1:])))
-
-    #test_with_leak_data(encoder, autoencoder)
+    encoder, autoencoder = run_simple_autoencoder()
+    test_with_leak_data(encoder, autoencoder)
     encoded_imgs, decoded_imgs = predict_simple_autoencoder(encoder, autoencoder, x_test)
     if PLOT_ACTIVATION:
         run_simple_plots(x_test, encoded_imgs, decoded_imgs)
-    autoencoder.evaluate(x=x_test, y=x_test)
 
 def run_cnn_plots(x_true, x_encoded, x_pred):
     test_utilities.plot_encoded_decoded(x_true, x_pred,
                                        CNN_OUTPUT_PATH +"/no_leak")
 
+
 def run_test_cnn(x_test):
     x_test = np.reshape(x_test, (-1, x_train.shape[1], x_train.shape[2], 1))
-    # load ae
-    AUTOENCODER_WEIGHTS_PATH = WEIGHTS_PATH + "CNN_more_filter_weights_e8_dim128_ba64.h5"
-    autoencoder=load_model(AUTOENCODER_WEIGHTS_PATH)
-
-    # get encoder from ae
-    encoder = Model(autoencoder.input, autoencoder.layers[-25].output)
-
-    # test_with_leak_data(encoder, autoencoder)
-    # encoded_imgs, decoded_imgs = predict_simple_autoencoder(encoder, autoencoder, x_test)
-    #if PLOT_ACTIVATION:
-    #    run_simple_plots(x_test, encoded_imgs, decoded_imgs)
-    
-    eval_res = autoencoder.evaluate(x=x_test, y=x_test)
-    decoded_imgs = autoencoder.predict(x_test)
-    pdb.set_trace()
-    return eval_res
+    encoder, decoder, autoencoder = run_cnn_autoencoder()
+    leak_vectors = test_with_leak_data_cnn(x_test, encoder, autoencoder)
+    encoded_imgs, decoded_imgs = predict_cnn_autoencoder(encoder, decoder, x_test)
+    test_utilities.plot_2D_vectors(encoded_imgs, leak_vectors, CNN_OUTPUT_PATH + "/leak")
+    if PLOT_ACTIVATION:
+        # plot example result
+        run_cnn_plots(x_test, encoded_imgs, decoded_imgs)
 
 
 if __name__ == '__main__':
     x_train, x_test = load_preprocessed_snippets()
-    #run_test_simple(x_test)
+    run_test_simple(x_test)
     run_test_cnn(x_test)
