@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import librosa
 import numpy as np
 import params
+from sklearn.metrics import confusion_matrix
 from sklearn.manifold import TSNE
 
 NUM_OF_VECTORS = 5
