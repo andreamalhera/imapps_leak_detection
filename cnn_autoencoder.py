@@ -11,12 +11,12 @@ from utilities.autoencoder_utilities import get_stored_model, load_preprocessed_
 # TODO this import should not be necessary here because plotting should only be part of testing
 from utilities import test_utilities
 
-ENCODING_DIM_CNN = 2
+ENCODING_DIM_CNN = 30
 LOAD_WEIGHTS = False
 AUTOENCODER_NAME = "cnn"
 SHUFFLE = True
-EPOCHS = 1
-BATCH_SIZE = 64
+EPOCHS = 30
+BATCH_SIZE = 32
 LOSS_CNN = "binary_crossentropy"  # binary_crossentropy, mean_squared_error
 CNN_SHAPE = [8, 11, 8]
 
@@ -82,12 +82,12 @@ def train_cnn_autoencoder(x_train, x_test, encoding_dim=ENCODING_DIM_CNN, num_co
     # Output model structure
     autoencoder.summary()
     now = datetime.datetime.now()
-    weight_path_autoencoder = os.path.join(WEIGHTS_PATH, "CNN_weights" + now.strftime("_%Y-%m-%d-%H:%M:%S") + ".h5")
+    weight_path_autoencoder = os.path.join(WEIGHTS_PATH, "CNN_weights_e30_dim30_ba32" + now.strftime("_%Y-%m-%d-%H:%M:%S") + ".h5")
     autoencoder.save(weight_path_autoencoder)
 
     # create the encoder model
     encoder = Model(input_training, encoded)
-    weight_path_encoder = os.path.join(WEIGHTS_PATH, "CNN_weights_encoder" + now.strftime("_%Y-%m-%d-%H:%M:%S") + ".h5")
+    weight_path_encoder = os.path.join(WEIGHTS_PATH, "CNN_weights_encoder_e30_dim30_ba32" + now.strftime("_%Y-%m-%d-%H:%M:%S") + ".h5")
     # TODO: weights are not saved correctly
     # encoder.save_weights(weight_path_encoder)
     autoencoder.save(weight_path_encoder, encoder)

@@ -6,27 +6,22 @@ import numpy as np
 import params
 import tensorflow as tf
 #TODO: import PCA and try out
-from utilities.autoencoder_utilities import get_stored_model, load_preprocessed_snippets, init_setup, get_autoencoder_weights_filepath
+from utilities.autoencoder_utilities import get_stored_model, load_preprocessed_snippets, init_setup
 
 # TODO: This import should not be necessary as plotting is part of testing
 from utilities import test_utilities
 
 print("Avalible:",tf.test.is_gpu_available())
-ENCODING_DIM=30
+ENCODING_DIM=10
 LOAD_WEIGHTS=False
 AUTOENCODER_NAME= "simple"
 SHUFFLE = True
-EPOCHS = 10
+EPOCHS = 30
 BATCH_SIZE = 64
 LOSS_SIMPLE_AUTOENCODER = "mean_squared_error"   #binary_crossentropy, mean_squared_error
 PLOT_ACTIVATION=False
-WEIGHTS_PATH=params.WEIGHTS_PATH
-
-now = datetime.datetime.now()
-timestamp = now.strftime("_%Y%m%d_%H%M%S")
-AUTOENCODER_WEIGHTS_PATH=get_autoencoder_weights_filepath(AUTOENCODER_NAME, "autoencoder", EPOCHS, BATCH_SIZE, ENCODING_DIM, timestamp)
-ENCODER_WEIGHTS_PATH=get_autoencoder_weights_filepath(AUTOENCODER_NAME, "ncoder", EPOCHS, BATCH_SIZE, ENCODING_DIM, timestamp)
-
+AUTOENCODER_WEIGHTS_PATH=params.AUTOENCODER_WEIGHTS_PATH
+ENCODER_WEIGHTS_PATH=params.ENCODER_WEIGHTS_PATH
 
 def train_simple_autoencoder(x_train, x_test, encoding_dim=ENCODING_DIM):
     # reshape data from (number of samples, 64, 87) to (number of samples, 5568)
@@ -83,6 +78,11 @@ def train_simple_autoencoder(x_train, x_test, encoding_dim=ENCODING_DIM):
         loss = autoencoder.test_on_batch(x, x)
         losses.append(loss)
     #plot_losses(losses)
+
+    autoencoder.summary()
+    now = datetime.datetime.now()
+    autoencoder.save(AUTOENCODER_WEIGHTS_PATH + now.strftime("_%Y-%m-%d-%H:%M:%S") + ".h5", autoencoder.sample_weights)
+    autoencoder.save(ENCODER_WEIGHTS_PATH + now.strftime("_%Y-%m-%d-%H:%M:%S") + ".h5", encoder)
 
     return encoder, autoencoder
 
