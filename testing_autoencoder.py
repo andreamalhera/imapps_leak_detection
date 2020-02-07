@@ -91,7 +91,7 @@ def run_test_simple(x_test):
 
     x_test = x_test.reshape((len(x_test), np.prod(x_test.shape[1:])))
 
-    test_with_leak_data(encoder, autoencoder)
+    #test_with_leak_data(encoder, autoencoder)
     encoded_imgs, decoded_imgs = predict_simple_autoencoder(encoder, autoencoder, x_test)
     if PLOT_ACTIVATION:
         run_simple_plots(x_test, encoded_imgs, decoded_imgs)
