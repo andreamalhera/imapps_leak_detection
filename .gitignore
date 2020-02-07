@@ -1,0 +1,7 @@
+data/
+.idea/
+Graph/
+beat_times.csv
+vimapps/
+__pycache__/
+data/*
