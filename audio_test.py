@@ -7,8 +7,6 @@ import librosa.display
 import sklearn
 from sklearn.preprocessing import MinMaxScaler
 
-path="data/messestelle1.wav"
-
 def plot_audio(filename):
 
     spf = wave.open(filename,'r')
@@ -27,7 +25,7 @@ def plot_audio(filename):
     plt.title('Signal Wave...')
     plt.plot(signal)
     plt.show()
-plot_audio(path)
+
 
 def spectrogram(path):
     y, sr = librosa.load(path)
@@ -66,7 +64,7 @@ def get_audio_data(filename, target_sr):
     return audio_norm[:200]
 
 #input path
-path="data/messesteller1.wav"
+path="Material/duelferstr_sample_1.wav"
 
 
 #plot_audio(path)

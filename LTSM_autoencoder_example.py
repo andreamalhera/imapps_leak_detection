@@ -1,10 +1,12 @@
+from numpy import array
 from keras.models import Sequential
 from keras.layers import LSTM
 from keras.layers import Dense
 from keras.layers import RepeatVector
 from keras.layers import TimeDistributed
 import keras.callbacks as t
-
+from keras.utils import plot_model
+import audio_test as a
 import matplotlib.pyplot as plt
 
 
@@ -22,7 +24,7 @@ def LTSM(sequence):
     model.add(LSTM(100, activation='relu', return_sequences=True))
     model.add(TimeDistributed(Dense(1)))
     model.compile(optimizer='adam', loss='mse', metrics=['accuracy'])
-    #print(model.summary())
+    print(model.summary())
     # fit model
     model.fit(sequence, sequence, epochs=100, callbacks = [tbCallBack])
 
@@ -31,8 +33,8 @@ def LTSM(sequence):
 
     # demonstrate recreation
     yhat = model.predict(sequence, verbose=0)
-    #print("LTSM Autoencoder try to reconstruct the input (len(outputs) = len(input)): ")
-    #print(yhat[0,:,0])
+    print("LTSM Autoencoder try to reconstruct the input (len(outputs) = len(input)): ")
+    print(yhat[0,:,0])
     buffer =yhat[0,:,0]
     # Print reconstructed array as Plot
     plt.plot(buffer[5:], '.', ms=0.3, c='r')
@@ -67,8 +69,8 @@ def LTSM_predict_next_step(seq_in):
     model.fit(seq_in, seq_out, epochs=100, verbose=0)
     # demonstrate prediction
     yhat = model.predict(seq_in, verbose=0)
-    #print("LTSM Autoencoder predicts next step (len(outputs) = len(input)-1 ): ")
-    #print(yhat[0, :, 0])
+    print("LTSM Autoencoder predicts next step (len(outputs) = len(input)-1 ): ")
+    print(yhat[0, :, 0])
     #Print reconstructed array as Plot
     plt.plot(yhat[0, :, 0], '.', ms=0.3, c='r')
     plt.title('Reconstructed Array (2)')
@@ -80,10 +82,8 @@ def LTSM_predict_next_step(seq_in):
 # define input sequence
 
 #seq_in = array([[-0.1],[0.2],[0.3]])
-#path="data/messestelle1.wav"
-#seq_in = a.get_audio_data(path, 100)
+path="Material/duelferstr_sample_1.wav"
+seq_in = a.get_audio_data(path, 100)
 
-#LTSM(seq_in)
+LTSM(seq_in)
 #LTSM_predict_next_step(seq_in)
-
-

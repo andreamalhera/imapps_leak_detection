@@ -5,11 +5,9 @@ Start Jobs CIP
 Lege Datei in dein home directory
 Beispielinhalt:
 
-```bash
-#!/bin/sh
+"#!/bin/sh
 cd /home/k/kunzes/IMapps/imapps-master
-python3 simplest_autoencoder.py
-```
+python3 simplest_autoencoder.py "
 
 **Start job**
 * sbatch –partition=All bash_skript.sh
