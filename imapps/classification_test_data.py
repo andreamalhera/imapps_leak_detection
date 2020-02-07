@@ -10,6 +10,7 @@ from keras.models import Model
 from keras.layers import Input
 import matplotlib.pyplot as plt
 import os
+import utilities.test_utilities as test_untilities
 
 
 # TODO: in verschiedene methoden unterteilen, auch so dass leak und no leak verglichen werden kann
@@ -17,7 +18,7 @@ import os
 
 path = "data/classification_test_data"
 name = "x"
-weight_file_name = "x"
+weight_file_name = "CNN_weights_e30_dim10_ba64_2019-08-01-08:32:50.h5"
 file_names = []
 
 
@@ -184,15 +185,18 @@ def sum_up_error_for_whole_file(errors):
     return sum
 
 
-def plot_REs_as_lines(means_RE_leak, means_RE_no_leak, position):
+def plot_REs_as_lines(means_RE_leak, means_RE_no_leak, means_RE_challenge, position):
     x1 = np.arange(len(means_RE_leak))
     x2 = np.arange(len(means_RE_no_leak))
+    x3 = np.arange(len(means_RE_challenge))
 
     y1 = means_RE_leak
     y2 = means_RE_no_leak
+    y3 = means_RE_challenge
 
     plt.plot(x1, y1, c="r", label="leak")
-    plt.plot(x2, y2, c="g", label ="no_leak")
+    plt.plot(x2, y2, c="g", label="no_leak")
+    plt.plot(x3, y3, c="b", label="challenge")
     plt.legend()
     if position == "None":
         plt.savefig("data/classification_test_data/" + name + "/" + name + "_RE.png")
@@ -202,15 +206,18 @@ def plot_REs_as_lines(means_RE_leak, means_RE_no_leak, position):
     plt.show()
 
 
-def plot_REs_as_lines_details(means_RE_leak, means_RE_no_leak, y_limit, position):
+def plot_REs_as_lines_details(means_RE_leak, means_RE_no_leak, means_RE_challenge, y_limit, position):
     x1 = np.arange(len(means_RE_leak))
     x2 = np.arange(len(means_RE_no_leak))
+    x3 = np.arange(len(means_RE_challenge))
 
     y1 = means_RE_leak
     y2 = means_RE_no_leak
+    y3 = means_RE_challenge
 
     plt.plot(x1, y1, c="r", label="leak")
     plt.plot(x2, y2, c="g", label="no_leak")
+    plt.plot(x3, y3, c="b", label="challenge")
     plt.ylim(0, y_limit)
     plt.legend()
 
@@ -298,22 +305,50 @@ def classify(model_weights_name):
     return filename_error_label_list
 
 
-if __name__ == '__main__':
-    # TODO: every time you start a new classification set name here
-    # ONLY SET NAME HERE, NEVER CHANGE OTHER NAME VARIABLES!!!
-    name = "test_CNN_e30_dim10_ba32"
-    # weight_file_name = "cnn_epochs250_dim100_batch64_initial_architecture_weights.h5"
-    weight_file_name = "CNN_weights_e30_dim10_ba32_2019-08-01-08:29:49.h5"
-    cnn = True
+def get_TSNE():
+    cnn = False
+    encoder = load_model(params.WEIGHTS_PATH + "SIMPLE_weights_encoder_e30_dim10_ba64_2019-08-01-10:28:10.h5")
 
-    setup()
-
-    model = load_autoenc_model()
-
-    # preparation
     leak_list = read_leak_list()
     no_leak_list = read_no_leak_list()
 
+    dataset_leak_npy = load_elem_as_dataset(leak_list, 3)
+    dataset_no_leak_npy = load_elem_as_dataset(no_leak_list, 3)
+
+    if cnn:
+        dataset_leak = reshape_for_cnn_input(dataset_leak_npy)
+        dataset_no_leak = reshape_for_cnn_input(dataset_no_leak_npy)
+    else:
+        dataset_leak = reshape_dataset_for_input(dataset_leak_npy)
+        dataset_no_leak = reshape_dataset_for_input(dataset_no_leak_npy)
+
+    prediction_vector_leak = encoder.predict(dataset_leak)
+    prediction_vector_leak = prediction_vector_leak.reshape(-1, 5568)
+
+    prediction_vector_no_leak = encoder.predict(dataset_no_leak)
+    prediction_vector_no_leak = prediction_vector_no_leak.reshape(-1, 5568)
+
+    test_untilities.tsne_presentation_of_vectors(prediction_vector_no_leak, prediction_vector_leak)
+
+
+
+if __name__ == '__main__':
+    get_TSNE()
+    ## TODO: every time you start a new classification set name here
+    ## ONLY SET NAME HERE, NEVER CHANGE OTHER NAME VARIABLES!!!
+    #name = "test_Challenge_test3.2"
+    ## weight_file_name = "cnn_epochs250_dim100_batch64_initial_architecture_weights.h5"
+    #weight_file_name = "CNN_weights_e30_dim10_ba64_2019-08-01-08:32:50.h5"
+    #cnn = True
+    #
+    #setup()
+    #
+    #model = load_autoenc_model()
+    #
+    ## preparation
+    #leak_list = read_leak_list()
+    #no_leak_list = read_no_leak_list()
+    #
     #num_of_files = min(len(leak_list), len(no_leak_list))
     #
     #for i in range(num_of_files):
@@ -360,59 +395,74 @@ if __name__ == '__main__':
 
     ########### OLD: just first file, ^NEW: all 8 (or so) test files
 
-    create_folder_for_output()
-
-    dataset_leak_npy = load_elem_as_dataset(leak_list, 0)
-    dataset_no_leak_npy = load_elem_as_dataset(no_leak_list, 0)
-
-    if cnn:
-       dataset_leak = reshape_for_cnn_input(dataset_leak_npy)
-       dataset_no_leak = reshape_for_cnn_input(dataset_no_leak_npy)
-    else:
-       dataset_leak = reshape_dataset_for_input(dataset_leak_npy)
-       dataset_no_leak = reshape_dataset_for_input(dataset_no_leak_npy)
-
-    # use for file where only weights not model of cnn are saved:
-    # model = get_cnn_model()
-    # model.load_weights(params.WEIGHTS_PATH + weight_file_name)
-
-    prediction_leak = predict_on_dataset(model, dataset_leak)
-    pred_leak_npy = reshape_prediction(prediction_leak)
-
-    prediction_no_leak = predict_on_dataset(model, dataset_no_leak)
-    pred_no_leak_npy = reshape_prediction(prediction_no_leak)
-
-    # get reconstruction error
-    # --> jede ursprüngliche npy matrix mit predition vergleichen
-    euclidean_matrices_leak = calculate_euclidean(dataset_leak_npy, pred_leak_npy)
-    means_RE_leak = mean_for_every_snippet(euclidean_matrices_leak)
-
-    euclidean_matrices_no_leak = calculate_euclidean(dataset_no_leak_npy, pred_no_leak_npy)
-    means_RE_no_leak = mean_for_every_snippet(euclidean_matrices_no_leak)
-
-    print("LEAK:")
-    print(means_RE_leak)
-    print(sum_up_error_for_whole_file(means_RE_leak))
-    print("###########################")
-    print("NO_LEAK:")
-    print(means_RE_no_leak)
-    print(sum_up_error_for_whole_file(means_RE_no_leak))
-
-    plot_REs_as_lines(means_RE_leak, means_RE_no_leak, "None")
-    plot_REs_as_lines_details(means_RE_leak, means_RE_no_leak, 0.25, "None")
-
-    sum_leak = sum_up_error_for_whole_file(means_RE_leak)
-    sum_no_leak = sum_up_error_for_whole_file(means_RE_no_leak)
-
-    save_details(model, means_RE_leak, sum_leak, means_RE_no_leak, sum_no_leak, "None")
-
-    # TODO: get percentage of high reconstruction error ??
-
-    # old, might need later
-    # preprocessed_snippets
-    # for i in range(len(leak_list)):
-    #    print("Current file: ", leak_list[i])
-    #    file = np.load(classification_test_data_preparation.folder + "/output-labelled-npy-files/" + leak_list[i] + ".npy")
-    #    file = file.reshape((len(file), np.prod(file.shape[1:])))
-    #    prediction = model.predict(file)
+    #create_folder_for_output()
+    #
+    #dataset_leak_npy = load_elem_as_dataset(leak_list, 0)
+    #dataset_no_leak_npy = load_elem_as_dataset(no_leak_list, 0)
+    #
+    #dataset_challenge_npy = np.load(
+    #    classification_test_data_preparation.folder + "/output-challenge-npy-files/mel_snippets_Other_Dif.npy")
+    #
+    #dataset_challenge_npy = dataset_challenge_npy[:450]
+    #
+    #print("CHALLENGE", len(dataset_challenge_npy))
+    #
+    #if cnn:
+    #   dataset_leak = reshape_for_cnn_input(dataset_leak_npy)
+    #   dataset_challenge = reshape_for_cnn_input(dataset_challenge_npy)
+    #   dataset_no_leak = reshape_for_cnn_input(dataset_no_leak_npy)
+    #else:
+    #   dataset_leak = reshape_dataset_for_input(dataset_leak_npy)
+    #   dataset_challenge = reshape_dataset_for_input(dataset_challenge_npy)
+    #   dataset_no_leak = reshape_dataset_for_input(dataset_no_leak_npy)
+    #
+    ## use for file where only weights not model of cnn are saved:
+    ## model = get_cnn_model()
+    ## model.load_weights(params.WEIGHTS_PATH + weight_file_name)
+    #
+    #prediction_leak = predict_on_dataset(model, dataset_leak)
+    #pred_leak_npy = reshape_prediction(prediction_leak)
+    #
+    #prediction_no_leak = predict_on_dataset(model, dataset_no_leak)
+    #pred_no_leak_npy = reshape_prediction(prediction_no_leak)
+    #
+    #prediction_challenge = predict_on_dataset(model, dataset_challenge)
+    #pred_challenge_npy = reshape_prediction(prediction_challenge)
+    #
+    ## get reconstruction error
+    ## --> jede ursprüngliche npy matrix mit predition vergleichen
+    #euclidean_matrices_leak = calculate_euclidean(dataset_leak_npy, pred_leak_npy)
+    #means_RE_leak = mean_for_every_snippet(euclidean_matrices_leak)
+    #
+    #euclidean_matrices_challenge = calculate_euclidean(dataset_challenge_npy, pred_challenge_npy)
+    #means_RE_challenge = mean_for_every_snippet(euclidean_matrices_challenge)
+    #
+    #euclidean_matrices_no_leak = calculate_euclidean(dataset_no_leak_npy, pred_no_leak_npy)
+    #means_RE_no_leak = mean_for_every_snippet(euclidean_matrices_no_leak)
+    #
+    #print("LEAK:")
+    #print(means_RE_leak)
+    #print(sum_up_error_for_whole_file(means_RE_leak))
+    #print("###########################")
+    #print("NO_LEAK:")
+    #print(means_RE_no_leak)
+    #print(sum_up_error_for_whole_file(means_RE_no_leak))
+    #
+    #plot_REs_as_lines(means_RE_leak, means_RE_no_leak, means_RE_challenge, "None")
+    #plot_REs_as_lines_details(means_RE_leak, means_RE_no_leak, means_RE_challenge, 0.25, "None")
+    #
+    #sum_leak = sum_up_error_for_whole_file(means_RE_leak)
+    #sum_no_leak = sum_up_error_for_whole_file(means_RE_no_leak)
+    #
+    #save_details(model, means_RE_leak, sum_leak, means_RE_no_leak, sum_no_leak, "None")
+    #
+    ## TODO: get percentage of high reconstruction error ??
+    #
+    ## old, might need later
+    ## preprocessed_snippets
+    ## for i in range(len(leak_list)):
+    ##    print("Current file: ", leak_list[i])
+    ##    file = np.load(classification_test_data_preparation.folder + "/output-labelled-npy-files/" + leak_list[i] + ".npy")
+    ##    file = file.reshape((len(file), np.prod(file.shape[1:])))
+    ##    prediction = model.predict(file)
 

@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import librosa
 import numpy as np
 import params
-from sklearn.metrics import confusion_matrix
 from sklearn.manifold import TSNE
 
 NUM_OF_VECTORS = 5
@@ -10,17 +9,6 @@ NUM_OF_DISPLAY_DIGITS=5
 
 PICS_PATH=params.PICS_PATH
 TNSE_PATH=params.TNSE_PATH
-
-
-def calculate_MRR(ranks):
-    """
-    Calculates mmr from ranks of leak samples
-    """
-    receiporal_ranks = 0
-    for i in range(len(ranks)):
-        receiporal_ranks = receiporal_ranks + 1/(ranks)
-    mrr = (1/len(ranks))*receiporal_ranks
-    return mrr
 
 # use if embedding dimensionality is only 2
 def plot_2D_vectors(no_leak_vectors, leak_vectors, path):
@@ -119,7 +107,7 @@ def tsne_presentation_of_vectors(no_leak_vectors, leak_vectors):
 
     plt.legend()
     plt.savefig(TNSE_PATH)
-    #plt.show()
+    plt.show()
 
 
 # use only for simplest autoencoder with encoding dimensionality of 30 or 300
