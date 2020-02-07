@@ -3,27 +3,6 @@ Innovative Mobile Applications course LMU 2019 Group A<br>
 Applied deep learning on audio files <br>
 Within the context of "ErLoWa – Automatisierte Erkennung und Lokalisierung von Leckstellen in Wasserversorgungsnetzen"
 
-## Dokumentation: Struktur des Codes
-
-Für jede Autoencoder-Architektur wurde eine eigene Klasse angelegt. Folgende Autoencoder existieren:
-- Simple Autoencoder aus ausschließlich Dense Layers (`simple_autoencoder.py`)
-- CNN Autoencoder (`cnn_autoencoder.py`, `cnn_autoencoder_more_filter.py`)
-- Variational Autoencoder (`variational_autoencoder.py`, `va_autoencoder.py`, `vl_autoencoder.py`)
-- LSTM Autoencoder (`lstm_autoencoder.py`, `LSTM_autoencoder_example.py`)
-
-Zusätzlich gibt es Klassen zum Preprocessing der Daten (`preprocessing.py`, `preprocessing_leak_test_data.py`,
-`model_data_preparation.py`).
-
-Für die Klassifikation und zur Vorbereitung der Klassifikation gibt es die Klassen 
-`classification_test_data.py` und `classification_test_data_preparation.py`.
-
-Die Evaluation findet mit Hilfe der Klassen `evaluation_classification.py` und `roc_auc.py` statt.
-
-Einige Hilfsfunktionen sind in dem Ordner `utilities` ausgelagert.
-
-Die restlichen Klassen enthalten ebenfalls teilweise Hilfsfunktionen.
-
-
 ## Technologies
 Project is created with:
 * Python 3.6

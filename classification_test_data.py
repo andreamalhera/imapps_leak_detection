@@ -11,6 +11,7 @@ from keras.layers import Input
 import matplotlib.pyplot as plt
 import os
 
+
 # TODO: in verschiedene methoden unterteilen, auch so dass leak und no leak verglichen werden kann
 # TODO dann cnn trainiertes ding ausprobieren
 
@@ -244,46 +245,6 @@ def save_details(model, means_RE_leak, sum_leak, means_RE_no_leak, sum_no_leak, 
     f.close()
 
 
-def get_threshold(model, model_weights_name):
-    """Calculate  threshold for classfiy
-    Mean RE+ Std RE*a(1~1.5?) of training (sub)set without leak will be set as threshold"""
-    dataset_npy = np.load('./data/output/testset.npy')
-    split_position = int(dataset_npy.shape[0] * (1 - 0.2))
-    dataset_npy = dataset_npy[split_position:]
-    if "CNN" in model_weights_name or "cnn" in model_weights_name or "Cnn" in model_weights_name:
-        data_leak = reshape_for_cnn_input(dataset_npy)
-    else:
-        data_leak = reshape_dataset_for_input(dataset_npy)
-
-    prediction_leak = predict_on_dataset(model, data_leak)
-    pred_leak_npy = reshape_prediction(prediction_leak)
-
-    # get reconstruction error
-    euclidean_matrices_leak = calculate_euclidean(dataset_npy, pred_leak_npy)
-    means_RE_leak = mean_for_every_snippet(euclidean_matrices_leak)
-
-    mean_RE_all = np.mean(means_RE_leak)
-    std_RE_all = np.std(means_RE_leak)
-
-    # std is multiplied by 1.5 considering higher reconstruction error of unseen data
-    threshold = mean_RE_all + (std_RE_all * 1.3)
-    return threshold
-
-
-def smoothen_extrem_outliers(re_list, threshold):
-    for i in range(len(re_list)):
-        if re_list[i] > threshold * 1.5:
-            re_list[i] = threshold * 1.5
-    return re_list
-
-def check_outliers(re_list, threshold):
-    for i in range(len(re_list)):
-        if re_list[i] > threshold:
-            re_list[i] = 1
-        else:
-            re_list[i] = 0
-    return re_list
-
 def classify(model_weights_name):
 
     trained_weights_path = params.WEIGHTS_PATH + model_weights_name
@@ -297,12 +258,6 @@ def classify(model_weights_name):
 
     filename_error_label_list = []
 
-    pred_label = 0
-
-    threshold = get_threshold(model, model_weights_name)
-
-    nl = []
-    leak = []
     for i in range(len(leak_list)):
         data_leak_npy = load_elem_as_dataset(leak_list, i)
 
@@ -314,23 +269,15 @@ def classify(model_weights_name):
         prediction_leak = predict_on_dataset(model, data_leak)
         pred_leak_npy = reshape_prediction(prediction_leak)
 
-
         # get reconstruction error
         euclidean_matrices_leak = calculate_euclidean(data_leak_npy, pred_leak_npy)
         means_RE_leak = mean_for_every_snippet(euclidean_matrices_leak)
-        #means_RE_leak = smoothen_extrem_outliers(means_RE_leak, threshold)
-        means_RE_leak = check_outliers(means_RE_leak, threshold)
-        mean_RE_leak = np.mean(means_RE_leak)
-        
-        leak.append(mean_RE_leak)
-        # pred_label = no_leak_label
-        # if (mean_RE_leak > threshold):
-        #     pred_label = leak_label
-        pred_label = mean_RE_leak
-        filename_error_label_list.append([leak_list[i], pred_label, leak_label])
+        sum_RE_leak = sum_up_error_for_whole_file(means_RE_leak)
+
+        filename_error_label_list.append([leak_list[i], sum_RE_leak, leak_label])
 
     for i in range(len(no_leak_list)):
-        data_leak_npy = load_elem_as_dataset(no_leak_list, i)
+        data_leak_npy = load_elem_as_dataset(leak_list, i)
 
         if "CNN" in model_weights_name or "cnn" in model_weights_name or "Cnn" in model_weights_name:
             data_leak = reshape_for_cnn_input(data_leak_npy)
@@ -343,21 +290,11 @@ def classify(model_weights_name):
         # get reconstruction error
         euclidean_matrices_leak = calculate_euclidean(data_leak_npy, pred_leak_npy)
         means_RE_leak = mean_for_every_snippet(euclidean_matrices_leak)
-        #means_RE_leak = smoothen_extrem_outliers(means_RE_leak, threshold)
-        means_RE_leak = check_outliers(means_RE_leak, threshold)
-        mean_RE_leak = np.mean(means_RE_leak)
+        sum_RE_leak = sum_up_error_for_whole_file(means_RE_leak)
 
-        nl.append(mean_RE_leak)
-        #pred_label = no_leak_label
-        # if (mean_RE_leak > threshold):
-        #     pred_label = leak_label
-        pred_label = mean_RE_leak
-
-        filename_error_label_list.append([leak_list[i], pred_label, no_leak_label])
+        filename_error_label_list.append([leak_list[i], sum_RE_leak, no_leak_label])
 
     print("CLASSIFICATION RESULTS: ", filename_error_label_list)
-    print(leak)
-    print(nl)
     return filename_error_label_list
 
 
@@ -366,7 +303,7 @@ if __name__ == '__main__':
     # ONLY SET NAME HERE, NEVER CHANGE OTHER NAME VARIABLES!!!
     name = "test_CNN_e30_dim10_ba32"
     # weight_file_name = "cnn_epochs250_dim100_batch64_initial_architecture_weights.h5"
-    weight_file_name = "CNN_weights_e30_dim10_ba64_2019-08-01-08:32:50.h5"
+    weight_file_name = "CNN_weights_e30_dim10_ba32_2019-08-01-08:29:49.h5"
     cnn = True
 
     setup()
