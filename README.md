@@ -2,9 +2,9 @@
 Innovative Mobile Applications course LMU 2019 Group A<br>
 Applied deep learning on audio files <br>
 Within the context of "ErLoWa – Automatisierte Erkennung und Lokalisierung von Leckstellen in Wasserversorgungsnetzen"
-
+university's
 ## Abstract
-This project is part of a university's
+This project is part of a university's practical course. 
 Anomaly Detection and Localization in big industrial facilities is one important
 application field of Artificial Intelligence nowadays. As part of Munich's University program
 and in cooperation with Stadtwerken München I got to participate in a one week hackathon-like
