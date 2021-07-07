@@ -61,7 +61,7 @@ pip install -r requirements.txt
 ```
 
 ## Installation GPU
-- install miniconda
+- install (miniconda)[https://conda.io/projects/conda/en/latest/user-guide/install/index.html]
 - add to file .zshrc_local in your home directory (maybe you need to create it first):
 ```bash
 # Add for Miniconda3
